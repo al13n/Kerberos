@@ -1,0 +1,80 @@
+from KDC import KeyDistributionCenter
+from verifier import VerifierService
+import cryptoUtils
+import time
+
+class Client(process):
+    def setup(KDC: KeyDistributionCenter, V: VerifierService): 
+        self.clientPass = 'pwd_anon'
+        self.username = 'USER_1'
+        self.tgs_session_key = None
+        self.terminate = 0
+
+    def receive(msg=('AS_REP', msg)):
+        time.sleep(2)
+        output('\n\n')
+        output('#CLIENT: received AS_REP from KDC: ', msg)
+        output('#CLIENT: decrypt msg received and get ticket authorised')
+        authenticator = get_authenticator(msg['TGS_session_ticket'])
+        output('#CLIENT: encrypted msg: ', authenticator)
+        return_obj = {
+            'TGT': msg['TGT'],
+            'authenticator': authenticator
+        }
+        send(('TGS_REQ', return_obj), to= KDC)
+
+    def receive(msg= ('TGS_REP', msg)):
+        time.sleep(2)
+        output('\n\n')
+        output('#CLIENT: received TGS_REP from KDC: ', msg)
+        output('#CLIENT: decrypt msg received and get ticket to verifier')
+        decrypted = get_verifier_session_key(msg['Verifier_session_ticket'])
+        authenticator_ticket = get_authenticator_verifier(str(decrypted['verifier_session_key']))
+        return_obj = {
+            'Verifier_ticket': msg['Verifier_ticket'],
+            'Authenticator': authenticator_ticket 
+        }
+        send(('AP_REQ', return_obj), to=V)
+
+    def receive(msg= ('AP_REP', msg)):
+        time.sleep(2)
+        output('##CLIENT: Auth complete')
+
+    def send_AS_REQ():
+        time.sleep(2)
+        req = { 'username' : username}
+        send(('AS_REQ', req), to= KDC)
+
+    def run():
+        output('\n\n')
+        output('#CLIENT: starting auth process:')
+        output('#CLIENT: send AS_REQ')
+        time.sleep(2)
+        send_AS_REQ()
+        await(received(('done',)))
+        send(('done', ), to=(KDC|V))
+        output('##CLIENT: terminating')
+
+    def get_authenticator(ticket):
+        cipher = cryptoUtils.getNewCipher(clientPass)
+        decrypted = eval(cryptoUtils.decrypt(cipher, ticket))
+        tgs_session_key = str(decrypted['tgs_session_key'])
+        authenticator = {
+            'username' : username
+        }
+        cipher = cryptoUtils.getNewCipher(tgs_session_key)
+        encrypted = cryptoUtils.encrypt(cipher, str(authenticator))
+        return encrypted
+
+    def get_verifier_session_key(ticket):
+        cipher = cryptoUtils.getNewCipher(tgs_session_key)
+        decrypted = eval(cryptoUtils.decrypt(cipher, ticket))
+        return decrypted
+
+    def get_authenticator_verifier(key):
+        authenticator = {
+            'username': username
+        }
+        cipher = cryptoUtils.getNewCipher(key)
+        encrypted = cryptoUtils.encrypt(cipher, str(authenticator))
+        return encrypted

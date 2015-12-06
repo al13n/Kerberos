@@ -1,0 +1,15 @@
+from Crypto.Cipher import AES
+
+def pad(s):
+    return s + ((16-len(s) % 16)*'#')
+
+def encrypt(cipher, plaintext):
+    return cipher.encrypt(pad(plaintext))
+
+def decrypt(cipher, ciphertext):
+    dec = cipher.decrypt(ciphertext).decode('utf-8')
+    l = dec.count('#')
+    return dec[:len(dec)-l]
+
+def getNewCipher(key):
+	return AES.new(pad(key))

@@ -1,0 +1,26 @@
+import sys
+from client import Client
+from KDC import KeyDistributionCenter
+from verifier import VerifierService
+
+
+def main():
+    C = new(Client)
+    V = new(VerifierService, (), num= 1)
+    KDC = new(KeyDistributionCenter, (), num= 1)
+
+    setup(C, (KDC, V))
+    start(KDC)
+    start(V)
+    start(C)
+
+    
+
+
+    '''
+    secretKey = "HelloWorld"
+    cipher = AES.new(pad(secretKey))
+    e = encrypt(cipher, "plaintext")
+    print("encrypt: ", e)
+    print("decrypt: ",  decrypt(cipher, e))
+    '''

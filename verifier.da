@@ -1,0 +1,36 @@
+import time
+import cryptoUtils
+
+class VerifierService(process):
+    def setup(): 
+    	self.verifier_secret_key = 'VERIFIER_secret_key'
+    	self.terminate = 0
+
+    def receive(msg=('AP_REQ', msg), from_= C):
+    	time.sleep(2)
+    	output('\n\n')
+    	output('#VERIFIER: received AP_REQ from client')
+    	decrypted_verifier_ticket = get_decrypted_verifier_ticket(msg['Verifier_ticket'])
+    	decrypted_authenticator = get_decrypted_authenticator(msg['Authenticator'], str(decrypted_verifier_ticket['verifier_session_key']))
+    	if decrypted_verifier_ticket['username'] == decrypted_authenticator['username']:
+    		output('##VERIFIER: Client authorised')
+    		send(('AP_REP', 'Auth'), to=C)
+    	else:
+    		output('##VERIFIER: ERROR:Client unauthorised') 
+    		send('done', to= C) 	
+
+    def run():
+        output('### start Verifier' )
+        await(received(('done',)))
+        output('### VERIFIER terminating')
+
+    def get_decrypted_authenticator(ticket, key):
+    	cipher = cryptoUtils.getNewCipher(key)
+    	decrypted = eval(cryptoUtils.decrypt(cipher, ticket))
+    	return decrypted
+
+    def get_decrypted_verifier_ticket(ticket):
+    	cipher = cryptoUtils.getNewCipher(verifier_secret_key)
+    	decrypted = eval(cryptoUtils.decrypt(cipher, ticket))
+    	return decrypted
+    

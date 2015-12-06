@@ -1,0 +1,104 @@
+import cryptoUtils
+import random
+import time
+
+class KeyDistributionCenter(process):
+
+    def setup():
+        self.clientPass = 'pwd_anon'
+        self.clientUsername = 'USER_1'
+        self.verifier_secret_key = 'VERIFIER_secret_key'
+        self.TGS_secret_key = 'TGS_secret_key'
+        self.tgs_session_key = int(random.random()*10000)
+        self.verifier_session_key = int(random.random()*10000)
+
+    def receive(msg= ('AS_REQ', msg), from_= C):
+        time.sleep(2)
+        output('\n\n')
+        output('#KDC: received AS_REQ from user: ', msg)
+        output('#KDC: check in database for user')
+        output('#KDC: send reply, encrypt with client pass and TGS secret key')
+        TGT = get_TGT(clientUsername)
+        TGS_session_ticket = get_TGS_session_ticket()
+        return_obj = {
+            'TGT': TGT,
+            'TGS_session_ticket': TGS_session_ticket
+        }
+        send(('AS_REP', return_obj), to= C)
+
+    def receive(msg= ('TGS_REQ', msg), from_ = C):
+        time.sleep(2)
+        output('\n\n')
+        output('#KDC: received TGS_REQ from client: ', msg)
+        output('#KDC: if auth: send granted ticket')
+        decrypted_authenticator = decrypt_authenticator(msg['authenticator'])
+        decrypted_TGT = decrypt_TGT(msg['TGT'])
+        if decrypted_authenticator['username'] == decrypted_TGT['username']:
+            output('#KDC: Client authorised')
+            encrypted_verifier_session_ticket = get_verifier_session_ticket()
+            encrypted_auth_verifier_ticket = get_auth_verifier_ticket(decrypted_TGT['username'])
+            return_obj = {
+                'Verifier_ticket': encrypted_auth_verifier_ticket,
+                'Verifier_session_ticket': encrypted_verifier_session_ticket
+            }
+            send(('TGS_REP', return_obj), to= C)
+        else:
+            output('#KDC: ERROR: Client Unauthorised!')
+            send(('done',), to= C)
+
+    def run():
+        output('\n\n')
+        output('### start KDC')
+        await(received(('done',)))
+        output('### Terminating KDC')
+        #while True: pass
+
+    def get_TGT(username):
+        tgt = {
+            'username': username,
+            'tgs_session_key': tgs_session_key           
+        }
+        cipher = cryptoUtils.getNewCipher(TGS_secret_key)
+        encrypted = cryptoUtils.encrypt(cipher, str(tgt))
+        return encrypted
+
+    def get_TGS_session_ticket():
+        tgs_session_ticket = {
+            'tgs_session_key' : tgs_session_key
+        }
+        cipher = cryptoUtils.getNewCipher(clientPass)
+        encrypted = cryptoUtils.encrypt(cipher, str(tgs_session_ticket))
+        return encrypted
+
+    def decrypt_authenticator(authenticator):
+        cipher = cryptoUtils.getNewCipher(str(tgs_session_key))
+        decrypted = eval(cryptoUtils.decrypt(cipher, authenticator))
+        return decrypted
+
+    def decrypt_TGT(TGT):
+        cipher = cryptoUtils.getNewCipher(TGS_secret_key)
+        decrypted = eval(cryptoUtils.decrypt(cipher, TGT))
+        return decrypted
+
+    def get_verifier_session_ticket():
+        verifier_session_ticket = {
+            'verifier_session_key' : verifier_session_key
+        }
+        cipher = cryptoUtils.getNewCipher(str(tgs_session_key))
+        encrypted = cryptoUtils.encrypt(cipher, str(verifier_session_ticket))
+        return encrypted
+    
+    def get_auth_verifier_ticket(username):
+        auth_verifier_ticket = {
+            'username': username,
+            'verifier_session_key': verifier_session_key
+        }
+
+        cipher = cryptoUtils.getNewCipher(verifier_secret_key)
+        encrypted = cryptoUtils.encrypt(cipher, str(auth_verifier_ticket))
+        return encrypted
+
+    
+
+
+
