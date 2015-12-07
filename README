@@ -1,0 +1,44 @@
+				
+	README
+===============
+
+
+This is a basic implementation of the Kerberos Security protocol, that intends to solve the issues of
+single sign-on and authentication over an insecure network.
+
+It uses a trusted third party as an authenticating agent, and it does not require the use of sending client credentials over the network. It also protects against security attacks like the replay attack, 
+pass-the-ticket and Spoofing.
+
+Implementation:
+=================  
+
+The Kerberos Protocol has been implemented in DistAlgo, to show the various steps occuring over the network and how authentication is done. It consists of three main interacting processes, namely, the Client
+, the Key Distribution Center and the Verifier/Web Service. The steps involved are as follows:
+
+1.AS REQ/AS REP: 
+The client C contacts AS, from which she receives a ticket for the TGS, that will be used in the next phase to request a ticket for a service V. This ticket has the form EKTGS (k1, C, L), where k1 is a fresh session key to be used for subsequent communication between C and the TGS. This key is also sent to C encrypted under the client personal key KC, which is derived from the user password through a key derivation function (for details on this and all cryptographic-related functions of the Kerberos system see [11]). Note that this ticket, like all tickets emitted, contains a lifetime value L, which limits its usage to a certain time window (typically 24 hours, for the TGS ticket). The (random) nonce NC is checked by C so to prevent replays of old responses from the TGS that might fake C into re-accepting an old, possibly broken, session key.
+
+2.TGS REQ/TGS REP: 
+The client C forwards the received ticket to the TGS, together with an authenticator of the form Ek1(C,TC), containing a timestamp TC. The TGS then decrypts the ticket, extracts the session key and if it can successfully decrypt the authenticator and the timestamp is inside a certain time windows of acceptability, it assumes the client to be legitimate (since she knows the session key k1). The TGS sends, as a reply, a ticket for the specific service requested, together with a new session key k2 encrypted with k1. Even in this case, nonce N′C prevents replays of old sessions. Note that if the client needs access to a certain service and already possesses a valid TGS ticket, she can skip the first phase and just send a TGS REQ, thus avoiding password reinsertion (Single-SignOn),needed in the first phase for AS REP decryption.
+3.AP REQ/AP REQ: 
+As in the previous step, the ticket received is sent with a new authenticator (this time encrypted with k2) to the service for which authentication is needed. If both these elements are verified as correct, the client is considered authenticated. If mutual authenticationis requested, the service sends his own authenticator using the extracted key k2. 
+
+
+The Implementation in distAlgo consists of these 3 processes that follow the above message passing model.
+
+
+Technology Used:
+==================
+
+Python
+DistAlgo
+PyCrypto
+
+USE:
+========
+
+1. Install distalgo and python 3.4
+2. Run ./startScript in your terminal. 
+3. It should compile and start the process. The user credentials are hard coded for now.
+
+
