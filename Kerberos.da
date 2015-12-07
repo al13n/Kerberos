@@ -13,14 +13,3 @@ def main():
     start(KDC)
     start(V)
     start(C)
-
-    
-
-
-    '''
-    secretKey = "HelloWorld"
-    cipher = AES.new(pad(secretKey))
-    e = encrypt(cipher, "plaintext")
-    print("encrypt: ", e)
-    print("decrypt: ",  decrypt(cipher, e))
-    '''

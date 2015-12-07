@@ -39,6 +39,7 @@ class Client(process):
     def receive(msg= ('AP_REP', msg)):
         time.sleep(2)
         output('##CLIENT: Auth complete')
+        terminate = 1
 
     def send_AS_REQ():
         time.sleep(2)
@@ -51,7 +52,7 @@ class Client(process):
         output('#CLIENT: send AS_REQ')
         time.sleep(2)
         send_AS_REQ()
-        await(received(('done',)))
+        await(received(('done',)) or (terminate == 1))
         send(('done', ), to=(KDC|V))
         output('##CLIENT: terminating')
 

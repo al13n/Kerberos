@@ -50,7 +50,7 @@ class KeyDistributionCenter(process):
         output('\n\n')
         output('### start KDC')
         await(received(('done',)))
-        output('### Terminating KDC')
+        output('### KDC: Terminating')
         #while True: pass
 
     def get_TGT(username):

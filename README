@@ -9,6 +9,8 @@ single sign-on and authentication over an insecure network.
 It uses a trusted third party as an authenticating agent, and it does not require the use of sending client credentials over the network. It also protects against security attacks like the replay attack, 
 pass-the-ticket and Spoofing.
 
+
+
 Implementation:
 =================  
 
@@ -45,7 +47,9 @@ USE:
 Credits and References:
 =========================
 
-1. Professor Annie Liu <liu@cs.stonybrook.edu>, for directing me in this project
+1. Professor Annie Liu <liu@cs.stonybrook.edu>
 2. Attacking and fixing the Microsoft Windows Kerberos login service. <url: https://dl.packetstormsecurity.net/papers/attack/m0t-krb5-08-2010.pdf>
 3. Explain like I'm five: Kerberos. <url: http://www.roguelynn.com/words/explain-like-im-5-kerberos/ >
 4. RFC 4120. <url: https://www.ietf.org/rfc/rfc4120.txt >
+5. DistAlgo, <url: https://github.com/DistAlgo/distalgo >
+6. PyCrypto, <url: https://www.dlitz.net/software/pycrypto/ >
