@@ -42,3 +42,10 @@ USE:
 3. It should compile and start the process. The user credentials are hard coded for now.
 
 
+Credits and References:
+=========================
+
+1. Professor Annie Liu <liu@cs.stonybrook.edu>, for directing me in this project
+2. Attacking and fixing the Microsoft Windows Kerberos login service. <url: https://dl.packetstormsecurity.net/papers/attack/m0t-krb5-08-2010.pdf>
+3. Explain like I'm five: Kerberos. <url: http://www.roguelynn.com/words/explain-like-im-5-kerberos/ >
+4. RFC 4120. <url: https://www.ietf.org/rfc/rfc4120.txt >
